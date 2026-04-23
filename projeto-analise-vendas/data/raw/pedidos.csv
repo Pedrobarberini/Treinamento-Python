@@ -1,4 +1,4 @@
-pedido_id,cliente_id,produto_id,data_pedido,quantidade,preco_unitario,desconto,frete
+pedido_id,cliente_id,produto_id,data_pedido,quantidade,preco_custo,desconto,frete
 1,101,201,2024-01-05,1,3500.00,200.00,50.00
 2,102,202,2024-01-06,2,1800.00,100.00,40.00
 3,103,203,2024-01-07,3,120.00,0.00,20.00

@@ -13,14 +13,24 @@ def main():
     print("dados carregados com sucesso!\n")
 
     pedidos = limpar_pedidos(pedidos)
+    print("dados de pedidos limpos com sucesso!\n")
     produtos = limpar_produtos(produtos)
+    print("dados de produtos limpos com sucesso!\n")
     clientes = limpar_clientes(clientes)
+    print("dados de clientes limpos com sucesso!\n")
 
     print("dados limpos com sucesso!\n")
+    pedidos.to_csv("data/processed/dados_limpos.csv", index=False)
+
 
     df = integrar_dados(pedidos, produtos, clientes)
+    print("dados integrados com sucesso!\n")
     df = criar_variaveis(df)
+    print("variáveis criadas com sucesso!\n")
+    
     print("dados processados com sucesso!\n")
+    df.to_csv("data/processed/dados_processados.csv", index=False)
+
 
 
     kpis = calcular_kpis(df)
