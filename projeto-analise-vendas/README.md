@@ -66,6 +66,22 @@ Dados Brutos → Limpeza → Processamento → Análise → Output
    * Salvamento dos dados tratados
 
 ---
+### Etapas de alteração de dados:
+
+projeto-analise-vendas\data\raw
+
+-clientes.csv
+-pedidos.csv
+-produtos.csv
+
+parametro de dados:
+
+cliente : cliente_id,nome,cidade,estado
+
+pedidos : pedido_id,cliente_id,produto_id,data_pedido,quantidade,preco_custo,desconto,frete
+
+produtos : produto_id,nome,categoria,preco_unitario
+---
 
 ## 📊 KPIs Gerados
 
