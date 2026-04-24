@@ -12,4 +12,5 @@ authors = [
 dependencies = [
     "pandas",
     "numpy"
+    "matplotlib"
 ]

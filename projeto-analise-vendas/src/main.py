@@ -2,7 +2,7 @@ from analise_vendas.data_loading import carregar_dados
 from analise_vendas.data_cleaning import limpar_pedidos, limpar_produtos, limpar_clientes
 from analise_vendas.data_processing import integrar_dados, criar_variaveis
 from analise_vendas.analysis import calcular_kpis
-from analise_vendas.visualization import plot_kpis
+from analise_vendas.visualization import plot_kpis, plot_receita_mensal
 import os 
 
 def main():
@@ -44,8 +44,8 @@ def main():
 
     print("pipeline de dados finalizada com sucesso!")
 
-    plot_kpis(kpis)
-
+    plot_kpis(kpis, df)
+    plot_receita_mensal(df)
 
 if __name__ == "__main__":
     main()
