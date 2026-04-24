@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "analise-vendas-pedro"
+version = "0.1.0"
+description = "Pipeline de análise de vendas com Pandas e NumPy"
+authors = [
+    {name = "Pedro Barberini"}
+]
+dependencies = [
+    "pandas",
+    "numpy"
+]

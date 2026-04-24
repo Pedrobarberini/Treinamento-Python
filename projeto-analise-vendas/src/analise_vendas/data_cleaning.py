@@ -10,7 +10,7 @@ def limpar_pedidos(df):
 
 def limpar_produtos(df):
     df = df.drop_duplicates()
-    df["preco_custo"] = pd.to_numeric(df["preco_custo"], errors='coerce')
+    df["preco_unitario"] = pd.to_numeric(df["preco_unitario"], errors='coerce')
 
     df = df.dropna()
 
