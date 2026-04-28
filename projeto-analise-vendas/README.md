@@ -108,7 +108,7 @@ Exemplo de saída:
 * Python 3
 * Pandas
 * NumPy
-
+* mapplotlib
 ---
 
 ## ▶️ Como Executar o Projeto
