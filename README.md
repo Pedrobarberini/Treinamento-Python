@@ -141,7 +141,7 @@ OU
 ### 5. Execultar o projeto .exe
 
 ```
-Acessar: projetos-caf-trens\dist
+Acessar no CMD: cd "local do arquivo"\projetos-caf-trens\dist
 Escrever no Terminal CMD: PAV.exe
 ```
 ---
