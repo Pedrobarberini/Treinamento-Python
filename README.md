@@ -95,9 +95,9 @@ Exemplo de saída:
 
 ```
 {
-  "receita_total": 31670.0,
-  "lucro_total": 10720.0,
-  "ticket_medio": 1583.5
+  "receita_total": 23,450.00,
+  "lucro_total": 9,380.00,
+  "ticket_medio": 1,116.67
 }
 ```
 
@@ -136,7 +136,14 @@ pip install -r requirements.txt
 ```
 python main.py
 ```
+OU
 
+### 5. Execultar o projeto .exe
+
+```
+Acessar: projetos-caf-trens\dist
+Escrever no Terminal CMD: PAV.exe
+```
 ---
 
 ## 📂 Saídas do Projeto
