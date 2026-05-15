@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+from streamlit_plotly_events import plotly_events
 
 COLORS = {
     "accent":  "#00e5ff",
@@ -14,7 +15,6 @@ COLORS = {
     "text":    "#f0f4ff",
     "muted":   "#6b7280",
 }
-
 
 PALETTE = [
     "#00e5ff", "#7c3aed", "#f59e0b", "#10b981",
@@ -62,7 +62,6 @@ PLOTLY_LAYOUT = dict(
 
 
 def _apply_layout(fig, extra: dict = None):
-    """Aplica o tema padrão + customizações extras em qualquer figura."""
     layout = PLOTLY_LAYOUT.copy()
     if extra:
         layout.update(extra)
@@ -70,16 +69,13 @@ def _apply_layout(fig, extra: dict = None):
     return fig
 
 
-def _bar_style(fig, color_col: str = None):
-    """Adiciona borda + glow nas barras via marker."""
+def _bar_style(fig):
     fig.update_traces(
-        marker=dict(
-            line=dict(width=0),
-            opacity=0.9,
-        ),
+        marker=dict(line=dict(width=0), opacity=0.9),
         selector=dict(type="bar"),
     )
     return fig
+
 
 CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
@@ -98,7 +94,6 @@ CSS = """
   --radius:      16px;
 }
 
-/* Fundo geral */
 html, body, [class*="css"] {
   font-family: 'DM Sans', sans-serif !important;
   background-color: var(--bg-main) !important;
@@ -122,7 +117,6 @@ html, body, [class*="css"] {
   max-width: 1400px !important;
 }
 
-/* Título */
 h1 {
   font-family: 'Syne', sans-serif !important;
   font-weight: 800 !important;
@@ -133,7 +127,7 @@ h1 {
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
-  animation: titleFade 0.8s ease forwards;
+  animation: titleFade 2.0s ease forwards;
 }
 
 @keyframes titleFade {
@@ -141,7 +135,6 @@ h1 {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Cards de métricas */
 [data-testid="metric-container"] {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
@@ -150,7 +143,7 @@ h1 {
   box-shadow: var(--glow), inset 0 1px 0 rgba(255,255,255,0.04) !important;
   position: relative;
   overflow: hidden;
-  animation: cardIn 0.6s ease forwards;
+  animation: cardIn 1.5s ease forwards;
   transition: transform 0.25s ease, box-shadow 0.25s ease !important;
 }
 
@@ -187,7 +180,6 @@ h1 {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Gráficos */
 [data-testid="stPlotlyChart"] {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
@@ -208,13 +200,30 @@ h1 {
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* Scrollbar */
+/* Botão limpar filtro */
+.stButton > button {
+  background: rgba(0,229,255,0.08) !important;
+  border: 1px solid rgba(0,229,255,0.3) !important;
+  border-radius: 8px !important;
+  color: var(--accent) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.8rem !important;
+  padding: 0.3rem 1rem !important;
+  transition: background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.stButton > button:hover {
+  background: rgba(0,229,255,0.18) !important;
+  box-shadow: 0 0 12px rgba(0,229,255,0.2) !important;
+}
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
 ::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 99px; }
 
 [data-testid="column"] { padding: 0 0.5rem !important; }
 """
+
 
 def inject_css():
     st.markdown(f"<style>{CSS}</style>", unsafe_allow_html=True)
@@ -232,13 +241,15 @@ def plot_kpis(kpis, df):
         unsafe_allow_html=True,
     )
 
+    # ── KPIs linha 1 ──
     col1, col2, col3 = st.columns(3)
-    col1.metric("Receita Total",  f"R$ {receita:,.2f}")
-    col2.metric("Lucro Total",    f"R$ {lucro:,.2f}")
-    col3.metric("Ticket Médio",   f"R$ {ticket:,.2f}")
+    col1.metric("Receita Total", f"R$ {receita:,.2f}")
+    col2.metric("Lucro Total",   f"R$ {lucro:,.2f}")
+    col3.metric("Ticket Médio",  f"R$ {ticket:,.2f}")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ── KPIs linha 2 ──
     col4, col5, col6, col7 = st.columns(4)
     col4.metric("Pedidos",    df["pedido_id"].nunique())
     col5.metric("Clientes",   df["cliente_id"].nunique())
@@ -247,34 +258,43 @@ def plot_kpis(kpis, df):
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ── Meses ──
     meses = {
         1:"Jan", 2:"Fev", 3:"Mar", 4:"Abr",
         5:"Mai", 6:"Jun", 7:"Jul", 8:"Ago",
         9:"Set", 10:"Out", 11:"Nov", 12:"Dez",
     }
+    meses_inv = {v: k for k, v in meses.items()}  # {"Jan": 1, "Fev": 2, ...}
+
+    # ── Gráfico: Receita por Mês ──
 
     receita_mes = (
         df.groupby("mes")["valor_total"]
         .sum()
-        .reindex(meses.keys(), fill_value=0)
         .reset_index()
     )
-    receita_mes["mes"] = receita_mes["mes"].map(meses)
+    receita_mes["mes"] = receita_mes["mes"].astype(int).map(meses)
 
     fig_mes = px.bar(
         receita_mes,
         x="mes",
         y="valor_total",
-        title="Receita por Mês",
+        title="Receita por Mês  —  clique para filtrar",
         color="mes",
         color_discrete_sequence=PALETTE,
         category_orders={"mes": list(meses.values())},
-        labels={"mes": "Mês", "valor_total": "Valor Total"},
+        labels={"mes": "", "valor_total": "Valor Total"},
     )
+    print(receita_mes["valor_total"])  # Debug: verificar dados antes de plotar
     _bar_style(fig_mes)
-    _apply_layout(fig_mes)
+    _apply_layout(fig_mes, extra={"showlegend": False})
 
-    receita_estado = df.groupby("estado")["valor_total"].sum().reset_index()
+    # ── Gráfico: Receita por Estado ──
+    receita_estado = (
+        df.groupby("estado")["valor_total"]
+        .sum()
+        .reset_index()
+    )
 
     fig_estado = px.bar(
         receita_estado,
@@ -283,13 +303,56 @@ def plot_kpis(kpis, df):
         title="Receita por Estado",
         color="estado",
         color_discrete_sequence=PALETTE,
-        labels={"estado": "Estado", "valor_total": "Valor Total"},
+        labels={"estado": "", "valor_total": "Valor Total"},
     )
     _bar_style(fig_estado)
-    _apply_layout(fig_estado)
+    _apply_layout(fig_estado, extra={"showlegend": False})
 
+    # ── Linha 1: fig_mes (clicável) + fig_estado ──
+    cols_top = st.columns(2)
+
+    with cols_top[0]:
+        # Define largura total via layout do fig antes de renderizar
+        fig_mes.update_layout(width=None)
+        clicked = plotly_events(
+            fig_mes,
+            click_event=True,
+            key="click_mes",
+        )
+        # Toggle: clicar no mesmo mês remove o filtro
+        if clicked:
+            mes_clicado = clicked[0]["x"]
+            if st.session_state.get("filtro_mes") == mes_clicado:
+                st.session_state.pop("filtro_mes", None)
+            else:
+                st.session_state["filtro_mes"] = mes_clicado
+
+    cols_top[1].plotly_chart(fig_estado, use_container_width=True)
+
+    # ── Indicador de filtro ativo + botão de reset ──
+    mes_sel = st.session_state.get("filtro_mes", None)
+
+    if mes_sel:
+        col_info, col_btn = st.columns([5, 1])
+        col_info.markdown(
+            f"<p style='color:#00e5ff; font-size:0.85rem; margin:0.5rem 0'>"
+            f"🔍 Filtrando por: <strong>{mes_sel}</strong></p>",
+            unsafe_allow_html=True,
+        )
+        with col_btn:
+            if st.button("✕ Limpar filtro"):
+                st.session_state.pop("filtro_mes", None)
+                st.rerun()
+
+        df_filtrado = df[df["mes"] == meses_inv[mes_sel]]
+        titulo_cat  = f"Receita por Categoria — {mes_sel}"
+    else:
+        df_filtrado = df
+        titulo_cat  = "Receita por Categoria — Todos os Meses"
+
+    # ── Gráfico: Donut filtrado ──
     receita_categoria = (
-        df.groupby("categoria")["valor_total"]
+        df_filtrado.groupby("categoria")["valor_total"]
         .sum()
         .reset_index()
     )
@@ -298,18 +361,14 @@ def plot_kpis(kpis, df):
         receita_categoria,
         names="categoria",
         values="valor_total",
-        title="Receita por Categoria",
+        title=titulo_cat,
         color_discrete_sequence=PALETTE,
-        hole=0.55,            
+        hole=0.55,
     )
     fig_categoria.update_traces(
         textfont=dict(family="DM Sans, sans-serif", size=12),
         marker=dict(line=dict(color=COLORS["bg"], width=2)),
     )
     _apply_layout(fig_categoria)
-
-    cols_top = st.columns(2)
-    cols_top[0].plotly_chart(fig_mes,    use_container_width=True)
-    cols_top[1].plotly_chart(fig_estado, use_container_width=True)
 
     st.plotly_chart(fig_categoria, use_container_width=True)

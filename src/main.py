@@ -62,6 +62,8 @@ def main():
 
     print("Pipeline de dados finalizada com sucesso!")
 
+    
+
 
 if __name__ == "__main__":
     main()
